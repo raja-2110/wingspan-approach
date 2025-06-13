@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mock Test | Wingspan Approach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Include jsPDF from CDN for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+  <!-- Navigation -->
+  <nav class="bg-blue-900 text-white shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+      <a href="index.html" class="text-2xl font-bold">Wingspan Approach</a>
+      <div class="space-x-4 hidden md:flex">
+        <a href="index.html" class="hover:text-blue-300">Home</a>
+        <a href="mocktest.html" class="hover:text-blue-300">Mock Test</a>
+        <a href="logbook.html" class="hover:text-blue-300">Logbook</a>
+        <a href="cpl-cost-calculator.html" class="hover:text-blue-300">CPL Estimator</a>
+        <a href="about.html" class="hover:text-blue-300">About</a>
+        <a href="contact.html" class="hover:text-blue-300">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto px-4 py-12">
+    <h1 class="text-3xl font-bold text-blue-900 mb-4">🎯 Pilot Mock Test</h1>
+    <p class="text-gray-600 mb-6">Practice with randomly selected questions and a timer. You can download your results at the end or email them to yourself.</p>
+
+    <!-- Mock Test Container -->
+    <div id="mockTestApp" class="bg-white p-6 rounded shadow space-y-4">
+      <div id="questionContainer" class="text-lg font-medium text-gray-800">Loading question...</div>
+      
+      <div id="optionsContainer" class="space-y-2"></div>
+
+      <div class="flex items-center justify-between mt-4">
+        <button id="nextBtn" class="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800">Next</button>
+        <div class="text-sm text-gray-500" id="timerDisplay">⏱ Timer: 00:00</div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-blue-900 text-white text-center py-6 mt-12">
+    <p>© 2025 Wingspan Approach. All Rights Reserved.</p>
+  </footer>
+
+  <script>
+    // jsPDF import (from CDN)
+    const { jsPDF } = window.jspdf;
+
+    // Sample Questions
+    const questions = [
+      {
+        question: "What is the standard atmospheric pressure at sea level?",
+        options: ["1013.25 hPa", "1000 hPa", "980 hPa", "1020 hPa"],
+        answer: 0
+      },
+      {
+        question: "What does the term 'V1' refer to in aviation?",
+        options: ["Takeoff decision speed", "Landing speed", "Stall speed", "Cruising speed"],
+        answer: 0
+      },
+      {
+        question: "Which instrument shows aircraft pitch and bank?",
+        options: ["Altimeter", "Airspeed Indicator", "Attitude Indicator", "Heading Indicator"],
+        answer: 2
+      }
+      
+    ];
+
+    let currentIndex = 0;
+    let score = 0;
+    let timer = 0;
+    let timerInterval;
+
+    function startTest() {
+      currentIndex = 0;
+      score = 0;
+      timer = 0;
+      timerInterval = setInterval(() => {
+        timer++;
+        document.getElementById("timerDisplay").textContent = "⏱ Timer: " + formatTime(timer);
+      }, 1000); 
+      shuffleQuestions();
+      showQuestion();
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function shuffleQuestions() {
+      questions.sort(() => Math.random() - 0.5);
+    }
+
+    function showQuestion() {
+      if (currentIndex >= questions.length) {
+        endTest();
+        return;
+      }
+
+      const q = questions[currentIndex];
+      document.getElementById("questionContainer").textContent = q.question;
+
+      const optionsDiv = document.getElementById("optionsContainer");
+      optionsDiv.innerHTML = "";
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "block w-full text-left px-4 py-2 border rounded hover:bg-blue-100";
+        btn.textContent = opt;
+        btn.onclick = () => {
+          if (idx === q.answer) score++;
+          currentIndex++;
+          showQuestion();
+        };
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    function endTest() {
+      clearInterval(timerInterval);
+      const resultText = `Wingspan Approach Mock Test Results
+
+Your Score: ${score}/${questions.length}
+Time Taken: ${formatTime(timer)}
+`;
+      window.mockTestResults = resultText;
+
+      document.getElementById("mockTestApp").innerHTML = `
+        <h2 class="text-2xl font-bold text-green-600">🎉 Test Completed</h2>
+        <p class="mt-2">Your Score: ${score}/${questions.length}</p>
+        <p class="mt-1">Time Taken: ${formatTime(timer)}</p>
+        <div class="mt-4 flex flex-wrap gap-4">
+          <button onclick="window.location.reload()" class="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800">Restart</button>
+          <button onclick="downloadResultsPDF()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Download PDF</button>
+          <button onclick="emailResults()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Email Results</button>
+        </div>
+      `;
+    }
+
+    // Download PDF using jsPDF
+    function downloadResultsPDF() {
+      const doc = new jsPDF();
+      const lines = window.mockTestResults.split('\n');
+      let y = 10;
+      doc.setFontSize(16);
+      lines.forEach(line => {
+        doc.text(line, 10, y);
+        y += 10;
+      });
+      doc.save("MockTest_Results.pdf");
+    }
+
+    // Email results using mailto link
+    function emailResults() {
+      const subject = encodeURIComponent("Wingspan Approach Mock Test Results");
+      const body = encodeURIComponent(window.mockTestResults + "\n\nThank you for using Wingspan Approach!");
+      const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+      window.location.href = mailtoLink;
+    }
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      currentIndex++;
+      showQuestion();
+    });
+
+    window.onload = startTest;
+  </script>
+
+</body>
+</html>
