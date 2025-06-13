@@ -3,25 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wingspan Logbook</title>
+  <title>Wingspan Approach</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-white text-gray-800 font-sans">
-  <nav class="bg-blue-900 text-white shadow-lg p-4 text-center text-xl font-semibold">
-    Wingspan Logbook
+  <!-- Navbar -->
+  <nav class="bg-blue-900 text-white shadow-lg">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="text-2xl font-bold tracking-tight">
+          <a href="index.html">Wingspan Approach</a>
+        </div>
+        <div class="space-x-4 hidden md:flex">
+          <a href="index.html" class="hover:text-blue-300">Home</a>
+          <a href="mock-test.html" class="hover:text-blue-300">Mock Test</a>
+          <a href="logbook.html" class="hover:text-blue-300">Logbook</a>
+          <a href="cpl-cost-calculator.html" class="hover:text-blue-300">CPL Estimator</a>
+          <a href="about.html" class="hover:text-blue-300">About</a>
+          <a href="contact.html" class="hover:text-blue-300">Contact</a>
+        </div>
+      </div>
+    </div>
   </nav>
 
-  <div id="authSection" class="max-w-xl mx-auto mt-8 space-y-4">
-    <input id="email" type="email" placeholder="Email" class="border p-2 w-full" required />
-    <input id="password" type="password" placeholder="Password" class="border p-2 w-full" required />
-    <button id="registerBtn" class="bg-green-600 text-white px-4 py-2 rounded">Register</button>
-    <button id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Login</button>
-    <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded hidden">Logout</button>
-  </div>
+  
+<!-- Firebase Auth UI -->
+<div id="authSection" class="max-w-xl mx-auto mt-8 space-y-4">
+  <input id="email" type="email" placeholder="Email" class="border p-2 w-full" required />
+  <input id="password" type="password" placeholder="Password" class="border p-2 w-full" required />
+  <button id="registerBtn" class="bg-green-600 text-white px-4 py-2 rounded">Register</button>
+  <button id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Login</button>
+  <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded hidden">Logout</button>
+</div>
 
+
+<!-- Logbook Form -->
   <form id="logbookForm" class="max-w-xl mx-auto mt-8 space-y-4">
     <input id="flightDate" type="date" required class="border p-2 w-full" />
     <input id="aircraftType" type="text" placeholder="Aircraft Type" required class="border p-2 w-full" />
@@ -32,6 +51,7 @@
     <button type="submit" class="bg-blue-700 text-white px-4 py-2 rounded">Add Entry</button>
   </form>
 
+  <!-- Logbook Table -->
   <div class="max-w-6xl mx-auto mt-10">
     <table class="w-full border text-left">
       <thead>
@@ -50,7 +70,9 @@
     <p class="mt-4 font-semibold">Total Hours: <span id="totalHours">0.0</span></p>
   </div>
 
+  <!-- Working Firebase Code -->
   <script>
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAr_jRtJr2acnuO_CR2h6DsElHpqtb2_d8",
       authDomain: "wingspan-logbook.firebaseapp.com",
@@ -63,62 +85,11 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const auth = firebase.auth();
 
-    let currentUser = null;
-
-    document.getElementById("registerBtn").onclick = async () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      try {
-        await auth.createUserWithEmailAndPassword(email, password);
-        alert("Registered and Logged in");
-      } catch (error) {
-        alert("Error: " + error.message);
-      }
-    };
-
-    document.getElementById("loginBtn").onclick = async () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
-        alert("Logged in");
-      } catch (error) {
-        alert("Login failed: " + error.message);
-      }
-    };
-
-    document.getElementById("logoutBtn").onclick = () => {
-      auth.signOut();
-    };
-
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        currentUser = user;
-        document.getElementById("logoutBtn").classList.remove("hidden");
-        document.getElementById("loginBtn").classList.add("hidden");
-        document.getElementById("registerBtn").classList.add("hidden");
-        fetchEntries();
-      } else {
-        currentUser = null;
-        document.getElementById("logoutBtn").classList.add("hidden");
-        document.getElementById("loginBtn").classList.remove("hidden");
-        document.getElementById("registerBtn").classList.remove("hidden");
-        document.getElementById("logbookBody").innerHTML = "";
-        document.getElementById("totalHours").innerText = "0.0";
-      }
-    });
+    let logEntries = [];
 
     async function addEntry() {
-      if (!currentUser) {
-        alert("Please login to add entries.");
-        return;
-      }
-
       const entry = {
-        uid: currentUser.uid,
-        email: currentUser.email,
         date: document.getElementById("flightDate").value,
         aircraft: document.getElementById("aircraftType").value,
         reg: document.getElementById("registration").value,
@@ -127,21 +98,28 @@
         time: parseFloat(document.getElementById("flightTime").value).toFixed(1)
       };
 
+      if (!entry.date || !entry.aircraft || !entry.reg || !entry.pic || !entry.route || isNaN(entry.time)) {
+        alert("Please fill in all fields correctly.");
+        return;
+      }
+
       await db.collection("logbook").add(entry);
       document.getElementById("logbookForm").reset();
       fetchEntries();
     }
 
     async function fetchEntries() {
-      if (!currentUser) return;
+      const snapshot = await db.collection("logbook").get();
+      logEntries = snapshot.docs.map(doc => doc.data());
+      renderTable();
+    }
 
-      const snapshot = await db.collection("logbook").where("uid", "==", currentUser.uid).get();
+    function renderTable() {
       const tbody = document.getElementById("logbookBody");
       tbody.innerHTML = "";
       let total = 0;
 
-      snapshot.forEach(doc => {
-        const entry = doc.data();
+      logEntries.forEach(entry => {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td class="px-4 py-2 border">${entry.date}</td>
@@ -158,7 +136,9 @@
       document.getElementById("totalHours").innerText = total.toFixed(1);
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    // Bind on DOM load
+    window.addEventListener("DOMContentLoaded", () => {
+      fetchEntries();
       document.getElementById("logbookForm").addEventListener("submit", (e) => {
         e.preventDefault();
         addEntry();
@@ -166,6 +146,7 @@
     });
   </script>
 
+  <!-- Footer -->
   <footer class="bg-blue-900 text-white py-6 text-center text-sm mt-10">
     © 2025 Wingspan Approach. Built for aspiring aviators.
   </footer>
