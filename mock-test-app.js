@@ -2,7 +2,8 @@
 // Wingspan Approach — Mock Test App (Interactive Edition)
 // Fix: event delegation + data-* attributes (no inline onclick strings)
 // ═══════════════════════════════════════════════════════
-const { jsPDF } = window.jspdf;
+// NOTE: jsPDF is accessed lazily inside downloadPDF() only — do NOT put it
+// at top level or it will crash the entire script if the CDN hasn't loaded.
 
 // ── State ─────────────────────────────────────────────
 let state = {
@@ -490,6 +491,8 @@ function saveHistory(results) {
 
 // ── PDF ───────────────────────────────────────────────
 function downloadPDF() {
+  if (!window.jspdf) { alert('PDF library not loaded. Please check your internet connection.'); return; }
+  const { jsPDF } = window.jspdf;
   const doc   = new jsPDF('p','mm','a4');
   const pw = 210, ph = 297, ml = 20, mr = 20;
   const cw = pw - ml - mr;
