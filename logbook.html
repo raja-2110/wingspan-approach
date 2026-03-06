@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wingspan Approach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-white text-gray-800 font-sans">
+  <!-- Navbar -->
+  <nav class="bg-blue-900 text-white shadow-lg">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="text-2xl font-bold tracking-tight">
+          <a href="index.html">Wingspan Approach</a>
+        </div>
+        <div class="space-x-4 hidden md:flex">
+          <a href="index.html" class="hover:text-blue-300">Home</a>
+          <a href="mock-test.html" class="hover:text-blue-300">Mock Test</a>
+          <a href="logbook.html" class="hover:text-blue-300">Logbook</a>
+          <a href="cpl-cost-calculator.html" class="hover:text-blue-300">CPL Estimator</a>
+          <a href="about.html" class="hover:text-blue-300">About</a>
+          <a href="contact.html" class="hover:text-blue-300">Contact</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  
+<!-- Firebase Auth UI -->
+<div id="authSection" class="max-w-xl mx-auto mt-8 space-y-4">
+  <input id="email" type="email" placeholder="Email" class="border p-2 w-full" required />
+  <input id="password" type="password" placeholder="Password" class="border p-2 w-full" required />
+  <button id="registerBtn" class="bg-green-600 text-white px-4 py-2 rounded">Register</button>
+  <button id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Login</button>
+  <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded hidden">Logout</button>
+</div>
+
+
+<!-- Logbook Form -->
+  <form id="logbookForm" class="max-w-xl mx-auto mt-8 space-y-4">
+    <input id="flightDate" type="date" required class="border p-2 w-full" />
+    <input id="aircraftType" type="text" placeholder="Aircraft Type" required class="border p-2 w-full" />
+    <input id="registration" type="text" placeholder="Registration" required class="border p-2 w-full" />
+    <input id="pic" type="text" placeholder="Pilot in Command" required class="border p-2 w-full" />
+    <input id="route" type="text" placeholder="Route" required class="border p-2 w-full" />
+    <input id="flightTime" type="number" step="0.1" placeholder="Flight Time" required class="border p-2 w-full" />
+    <button type="submit" class="bg-blue-700 text-white px-4 py-2 rounded">Add Entry</button>
+  </form>
+
+  <!-- Logbook Table -->
+  <div class="max-w-6xl mx-auto mt-10">
+    <table class="w-full border text-left">
+      <thead>
+        <tr class="bg-blue-900 text-white">
+          <th class="px-4 py-2 border">Date</th>
+          <th class="px-4 py-2 border">Aircraft</th>
+          <th class="px-4 py-2 border">Reg</th>
+          <th class="px-4 py-2 border">PIC</th>
+          <th class="px-4 py-2 border">Route</th>
+          <th class="px-4 py-2 border">Time</th>
+          <th class="px-4 py-2 border">Remarks</th>
+        </tr>
+      </thead>
+      <tbody id="logbookBody"></tbody>
+    </table>
+    <p class="mt-4 font-semibold">Total Hours: <span id="totalHours">0.0</span></p>
+  </div>
+
+  <!-- Working Firebase Code -->
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAr_jRtJr2acnuO_CR2h6DsElHpqtb2_d8",
+      authDomain: "wingspan-logbook.firebaseapp.com",
+      projectId: "wingspan-logbook",
+      storageBucket: "wingspan-logbook.appspot.com",
+      messagingSenderId: "144086862183",
+      appId: "1:144086862183:web:bdc11a2120f3c3a86f87c2",
+      measurementId: "G-V7XKW5NVR9"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let logEntries = [];
+
+    async function addEntry() {
+      const entry = {
+        date: document.getElementById("flightDate").value,
+        aircraft: document.getElementById("aircraftType").value,
+        reg: document.getElementById("registration").value,
+        pic: document.getElementById("pic").value,
+        route: document.getElementById("route").value,
+        time: parseFloat(document.getElementById("flightTime").value).toFixed(1)
+      };
+
+      if (!entry.date || !entry.aircraft || !entry.reg || !entry.pic || !entry.route || isNaN(entry.time)) {
+        alert("Please fill in all fields correctly.");
+        return;
+      }
+
+      await db.collection("logbook").add(entry);
+      document.getElementById("logbookForm").reset();
+      fetchEntries();
+    }
+
+    async function fetchEntries() {
+      const snapshot = await db.collection("logbook").get();
+      logEntries = snapshot.docs.map(doc => doc.data());
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("logbookBody");
+      tbody.innerHTML = "";
+      let total = 0;
+
+      logEntries.forEach(entry => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="px-4 py-2 border">${entry.date}</td>
+          <td class="px-4 py-2 border">${entry.aircraft}</td>
+          <td class="px-4 py-2 border">${entry.reg}</td>
+          <td class="px-4 py-2 border">${entry.pic}</td>
+          <td class="px-4 py-2 border">${entry.route}</td>
+          <td class="px-4 py-2 border">${entry.time}</td>
+          <td class="px-4 py-2 border">N/A</td>`;
+        tbody.appendChild(row);
+        total += parseFloat(entry.time);
+      });
+
+      document.getElementById("totalHours").innerText = total.toFixed(1);
+    }
+
+    // Bind on DOM load
+    window.addEventListener("DOMContentLoaded", () => {
+      fetchEntries();
+      document.getElementById("logbookForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        addEntry();
+      });
+    });
+  </script>
+
+  <!-- Footer -->
+  <footer class="bg-blue-900 text-white py-6 text-center text-sm mt-10">
+    © 2025 Wingspan Approach. Built for aspiring aviators.
+  </footer>
+</body>
+</html>

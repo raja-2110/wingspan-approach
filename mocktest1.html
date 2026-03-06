@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wingspan Approach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    const questions = [
+      {
+        question: "What is the minimum visibility for VFR flight?",
+        options: ["3 km", "5 km", "1.5 km", "10 km"],
+        answer: 0,
+        explanation: "Minimum visibility for VFR is 3 km."
+      },
+      {
+        question: "Which instrument measures altitude?",
+        options: ["Airspeed Indicator", "Altimeter", "VSI", "Heading Indicator"],
+        answer: 1,
+        explanation: "The Altimeter measures altitude above sea level."
+      },
+      {
+        question: "What does the pitot tube measure?",
+        options: ["Altitude", "Vertical Speed", "Air Pressure", "Airspeed"],
+        answer: 3,
+        explanation: "The pitot tube measures dynamic pressure to calculate airspeed."
+      }
+    ];
+
+    let current = 0, score = 0, timer;
+    function startTest() {
+      current = 0; score = 0;
+      document.getElementById('mockTestInterface').innerHTML = '';
+      shuffle(questions);
+      showQuestion();
+      startTimer(180); // 3 mins
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function showQuestion() {
+      const q = questions[current];
+      const container = document.getElementById('mockTestInterface');
+      container.innerHTML = `
+        <div class="mb-4 text-right font-mono" id="timer"></div>
+        <h3 class="text-lg font-semibold mb-2">Q${current + 1}. ${q.question}</h3>
+        ${q.options.map((opt, i) => `
+          <button onclick="checkAnswer(${i})" class="block w-full text-left px-4 py-2 mb-2 border rounded hover:bg-blue-100">${opt}</button>
+        `).join('')}
+      `;
+    }
+
+    function checkAnswer(selected) {
+      const correct = questions[current].answer;
+      if (selected === correct) score++;
+      const explain = questions[current].explanation;
+      document.getElementById('mockTestInterface').innerHTML += `
+        <p class="mt-2 text-sm text-green-700">Explanation: ${explain}</p>
+        <button onclick="nextQuestion()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Next</button>
+      `;
+    }
+
+    function nextQuestion() {
+      current++;
+      if (current < questions.length) showQuestion();
+      else showResult();
+    }
+
+    function showResult() {
+      clearInterval(timer);
+      const percent = (score / questions.length) * 100;
+      const result = `Score: ${score}/${questions.length} (${percent.toFixed(1)}%)`;
+      const content = `
+        <h3 class="text-lg font-bold text-green-700">Test Completed!</h3>
+        <p class="mt-2">${result}</p>
+        <button onclick="downloadResult('${result}')" class="mt-4 bg-green-600 text-white px-4 py-2 rounded">Download Result</button>
+        <button onclick="startTest()" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded">Retake Test</button>
+      `;
+      document.getElementById('mockTestInterface').innerHTML = content;
+    }
+
+    function downloadResult(text) {
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'MockTestResult.txt';
+      a.click();
+    }
+
+    function startTimer(seconds) {
+      let remaining = seconds;
+      timer = setInterval(() => {
+        if (remaining <= 0) {
+          clearInterval(timer);
+          showResult();
+        } else {
+          document.getElementById('timer').textContent = `Time Left: ${Math.floor(remaining / 60)}:${(remaining % 60).toString().padStart(2, '0')}`;
+          remaining--;
+        }
+      }, 1000);
+    }
+
+    window.onload = () => {
+      startTest();
+    }
+  </script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+<!-- ... rest of the page remains unchanged -->
+</body>
+</html>

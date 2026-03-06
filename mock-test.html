@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mock Test Generator | Wingspan Approach</title>
+  <meta name="description" content="Generate aviation mock tests on demand. Choose topic, difficulty, and question type. Practice for DGCA, CPL, and pilot exams.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .slide-down { animation: slideDown 0.35s ease-out; }
+    @keyframes slideDown { from { max-height:0; opacity:0; } to { max-height:2000px; opacity:1; } }
+    .q-number { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:#1e3a5f; color:#fff; font-weight:700; font-size:14px; flex-shrink:0; }
+    .option-label { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:#dbeafe; color:#1e40af; font-weight:600; font-size:13px; flex-shrink:0; margin-right:10px; }
+    .card { background:#fff; border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,0.08), 0 4px 14px rgba(0,0,0,0.04); }
+    .btn-primary { background:linear-gradient(135deg,#1e40af,#2563eb); color:#fff; border:none; border-radius:12px; padding:12px 28px; font-weight:600; cursor:pointer; transition:all .2s; }
+    .btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(37,99,235,0.35); }
+    .btn-secondary { background:#f1f5f9; color:#1e3a5f; border:1px solid #e2e8f0; border-radius:10px; padding:10px 20px; font-weight:500; cursor:pointer; transition:all .2s; }
+    .btn-secondary:hover { background:#e2e8f0; }
+    .select-styled { appearance:none; background:#f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 14px center; padding:12px 40px 12px 14px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; color:#1e293b; transition:border-color .2s; }
+    .select-styled:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
+    .answer-correct { background:#f0fdf4; border-left:4px solid #22c55e; }
+    .history-item { transition:all .2s; }
+    .history-item:hover { background:#f1f5f9; }
+    .topic-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+    @media print {
+      nav, footer, #configSection, #actionsBar, #historySection, .no-print { display:none !important; }
+      body { background:#fff !important; }
+      .card { box-shadow:none !important; border:1px solid #e5e7eb; }
+    }
+    .hamburger-line { display:block; width:24px; height:2px; background:#fff; border-radius:2px; transition:all .3s; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="bg-blue-900 text-white shadow-lg relative z-50">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="text-2xl font-bold tracking-tight">
+          <a href="index.html">Wingspan Approach</a>
+        </div>
+        <!-- Desktop Nav -->
+        <div class="space-x-4 hidden md:flex">
+          <a href="index.html" class="hover:text-blue-300 transition">Home</a>
+          <a href="mock-test.html" class="text-blue-300 font-semibold">Mock Test</a>
+          <a href="logbook.html" class="hover:text-blue-300 transition">Logbook</a>
+          <a href="cpl-cost-calculator.html" class="hover:text-blue-300 transition">CPL Estimator</a>
+          <a href="about.html" class="hover:text-blue-300 transition">About</a>
+          <a href="contact.html" class="hover:text-blue-300 transition">Contact</a>
+        </div>
+        <!-- Mobile Hamburger -->
+        <button id="hamburgerBtn" class="md:hidden flex flex-col gap-1.5 p-2" onclick="toggleMobileMenu()">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </button>
+      </div>
+      <!-- Mobile Menu -->
+      <div id="mobileMenu" class="hidden md:hidden pb-4 space-y-2">
+        <a href="index.html" class="block py-2 px-3 rounded hover:bg-blue-800 transition">Home</a>
+        <a href="mock-test.html" class="block py-2 px-3 rounded bg-blue-800">Mock Test</a>
+        <a href="logbook.html" class="block py-2 px-3 rounded hover:bg-blue-800 transition">Logbook</a>
+        <a href="cpl-cost-calculator.html" class="block py-2 px-3 rounded hover:bg-blue-800 transition">CPL Estimator</a>
+        <a href="about.html" class="block py-2 px-3 rounded hover:bg-blue-800 transition">About</a>
+        <a href="contact.html" class="block py-2 px-3 rounded hover:bg-blue-800 transition">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-10">
+    <!-- Page Header -->
+    <div class="text-center mb-10 fade-in">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-blue-900 mb-2">✈️ Mock Test Generator</h1>
+      <p class="text-gray-500 text-base md:text-lg max-w-2xl mx-auto">Generate custom aviation practice tests instantly. Choose your topic, difficulty, and question format — perfect for DGCA, CPL & pilot exam preparation.</p>
+    </div>
+
+    <!-- Configuration Card -->
+    <section id="configSection" class="card p-6 md:p-8 mb-8 fade-in">
+      <h2 class="text-lg font-bold text-blue-900 mb-5 flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+        Configure Your Test
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1.5">Topic</label>
+          <select id="topicSelect" class="w-full select-styled">
+            <option value="all">All Topics (Mixed)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1.5">Difficulty</label>
+          <select id="difficultySelect" class="w-full select-styled">
+            <option value="all">All Levels</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1.5">Question Type</label>
+          <select id="typeSelect" class="w-full select-styled">
+            <option value="all">Mixed (All Types)</option>
+            <option value="mcq">Multiple Choice</option>
+            <option value="truefalse">True / False</option>
+            <option value="short">Short Answer</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1.5">Number of Questions</label>
+          <select id="countSelect" class="w-full select-styled">
+            <option value="5">5 Questions</option>
+            <option value="10" selected>10 Questions</option>
+            <option value="15">15 Questions</option>
+            <option value="20">20 Questions</option>
+            <option value="25">25 Questions</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-6 flex flex-wrap gap-3 items-center">
+        <button onclick="generateTest()" class="btn-primary flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Generate Test
+        </button>
+        <span id="availableCount" class="text-sm text-gray-400"></span>
+      </div>
+    </section>
+
+    <!-- Generated Test Display -->
+    <section id="testDisplay" class="hidden">
+      <!-- Test Header Info -->
+      <div id="testHeader" class="card p-5 mb-6 fade-in flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-bold text-blue-900" id="testTitle">Generated Test</h2>
+          <p class="text-sm text-gray-400 mt-0.5" id="testMeta"></p>
+        </div>
+        <div class="flex flex-wrap gap-2" id="testBadges"></div>
+      </div>
+
+      <!-- Questions List -->
+      <div id="questionsContainer" class="space-y-4 mb-8"></div>
+
+      <!-- Actions Bar -->
+      <div id="actionsBar" class="card p-5 mb-8 fade-in flex flex-wrap gap-3 items-center justify-between">
+        <div class="flex flex-wrap gap-3">
+          <button onclick="toggleAnswerKey()" class="btn-secondary flex items-center gap-2" id="answerKeyToggle">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            Show Answer Key
+          </button>
+          <button onclick="generateTest()" class="btn-secondary flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Generate Again
+          </button>
+          <button onclick="window.print()" class="btn-secondary flex items-center gap-2 no-print">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            Print
+          </button>
+        </div>
+        <button onclick="downloadPDF()" class="btn-primary flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Download PDF
+        </button>
+      </div>
+
+      <!-- Answer Key Section -->
+      <div id="answerKeySection" class="hidden mb-8"></div>
+    </section>
+
+    <!-- Test History -->
+    <section id="historySection" class="card p-6 mb-8 fade-in">
+      <h2 class="text-lg font-bold text-blue-900 mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Recent Tests
+      </h2>
+      <div id="historyList" class="space-y-2">
+        <p class="text-gray-400 text-sm italic">No tests generated yet. Configure and generate your first test above!</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-blue-900 text-white text-center py-6 mt-auto">
+    <p>© 2025 Wingspan Approach. Built for aspiring aviators.</p>
+  </footer>
+
+  <!-- Load question bank -->
+  <script src="questions-bank.js"></script>
+  <script src="mock-test-app.js"></script>
+</body>
+</html>

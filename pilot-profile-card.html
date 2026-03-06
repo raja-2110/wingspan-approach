@@ -1,0 +1,54 @@
+<!-- PILOT PROFILE SECTION -->
+<section id="pilotProfile" class="bg-white py-10 px-6">
+    <h2 class="text-2xl font-bold text-center text-blue-800 mb-6">Pilot Profile</h2>
+    
+    <div class="max-w-3xl mx-auto bg-blue-50 p-6 rounded-xl shadow-md">
+      <form id="profileForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <input type="text" id="pilotName" class="px-4 py-2 border rounded" placeholder="Pilot Name" required>
+        <input type="text" id="licenseNumber" class="px-4 py-2 border rounded" placeholder="License Number" required>
+        <input type="number" id="targetHours" class="px-4 py-2 border rounded" placeholder="Flight Hours Goal" min="0" step="1">
+      </form>
+  
+      <button onclick="saveProfile()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Save Profile</button>
+  
+      <div id="profileDisplay" class="mt-6 bg-white p-4 rounded shadow hidden">
+        <h3 class="text-lg font-semibold text-blue-700 mb-2">🧑‍✈️ Profile Summary</h3>
+        <p><strong>Name:</strong> <span id="displayName"></span></p>
+        <p><strong>License #:</strong> <span id="displayLicense"></span></p>
+        <p><strong>Flight Hours Goal:</strong> <span id="displayGoal"></span> hrs</p>
+      </div>
+    </div>
+  </section>
+  
+  <script>
+    function saveProfile() {
+      const name = document.getElementById("pilotName").value;
+      const license = document.getElementById("licenseNumber").value;
+      const goal = document.getElementById("targetHours").value;
+  
+      if (!name || !license) {
+        alert("Please fill in all fields.");
+        return;
+      }
+  
+      const profile = { name, license, goal };
+      localStorage.setItem("pilotProfile", JSON.stringify(profile));
+      displayProfile();
+      document.getElementById("profileForm").reset();
+    }
+  
+    function displayProfile() {
+      const data = JSON.parse(localStorage.getItem("pilotProfile"));
+      if (!data) return;
+  
+      document.getElementById("displayName").textContent = data.name;
+      document.getElementById("displayLicense").textContent = data.license;
+      document.getElementById("displayGoal").textContent = data.goal || "Not Set";
+      document.getElementById("profileDisplay").classList.remove("hidden");
+    }
+  
+    window.onload = function () {
+      displayProfile();
+    };
+  </script>
+  

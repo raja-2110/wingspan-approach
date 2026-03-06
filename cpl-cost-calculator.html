@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CPL Cost Estimator | Wingspan Approach</title>
+  <!-- Include this in the <body> of each page, at the top -->
+<nav class="bg-blue-900 text-white shadow-lg">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="flex justify-between items-center py-4">
+      <div class="text-2xl font-bold tracking-tight">
+        <a href="index.html">Wingspan Approach</a>
+      </div>
+      <div class="space-x-4 hidden md:flex">
+        <a href="index.html" class="hover:text-blue-300">Home</a>
+        <a href="mock-test.html" class="hover:text-blue-300">Mock Test</a>
+        <a href="logbook.html" class="hover:text-blue-300">Logbook</a>
+        <a href="cpl-cost-calculator.html" class="hover:text-blue-300">CPL Estimator</a>
+        <a href="about.html" class="hover:text-blue-300">About</a>
+        <a href="contact.html" class="hover:text-blue-300">Contact</a>
+      </div>
+    </div>
+  </div>
+</nav>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-blue-50 font-sans text-gray-800 min-h-screen py-12 px-4">
+  <div class="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+    <h1 class="text-3xl font-bold text-center text-blue-800 mb-6">CPL Cost Estimator</h1>
+    
+    <label class="block mb-2 font-semibold">Select Training Location</label>
+    <select id="location" class="w-full mb-4 px-4 py-2 border rounded">
+      <option value="india">India</option>
+      <option value="south_africa">South Africa</option>
+      <option value="canada">Canada</option>
+      <option value="usa">USA</option>
+    </select>
+
+    <label class="block mb-2 font-semibold">Include Type Rating?</label>
+    <select id="typeRating" class="w-full mb-6 px-4 py-2 border rounded">
+      <option value="yes">Yes</option>
+      <option value="no">No</option>
+    </select>
+
+    <button onclick="estimateCost()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">Estimate Total Cost</button>
+
+    <div id="costResult" class="mt-6 text-center text-lg font-semibold text-blue-700"></div>
+  </div>
+
+  <script>
+    function estimateCost() {
+      const location = document.getElementById('location').value;
+      const includeTypeRating = document.getElementById('typeRating').value;
+
+      let baseCost = 0;
+      switch(location) {
+        case "india": baseCost = 4700000; break;
+        case "south_africa": baseCost = 3700000; break;
+        case "canada": baseCost = 4000000; break;
+        case "usa": baseCost = 5000000; break;
+      }
+
+      if (includeTypeRating === "yes") {
+        baseCost += 1700000;
+      }
+
+      const formatted = "₹" + baseCost.toLocaleString('en-IN');
+      document.getElementById('costResult').innerText = `Estimated Total Cost: ${formatted}`;
+    }
+  </script>
+  <!-- Footer -->
+<footer class="bg-blue-900 text-white text-center py-6 mt-12">
+  <p>© 2025 Wingspan Approach. All rights reserved.</p>
+  <p class="text-sm mt-2">
+    Designed by an aspiring pilot ✈️ | Powered by passion & code
+  </p>
+</footer>
+</body>
+</html>
